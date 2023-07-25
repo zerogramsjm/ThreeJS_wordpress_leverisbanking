@@ -1,0 +1,600 @@
+<script type="module">
+
+			var divElement = document.createElement("Div");
+			divElement.id = "canvas";
+  
+            if (window.location.href.indexOf("brand-new-page-2") > -1) {
+      			document.getElementsByTagName("body")[0].appendChild(divElement);
+            }
+  
+			import * as THREE from '../build/three.module.js';
+
+// 			import { OrbitControls } from './jsm/controls/OrbitControls.js';
+			import { OrbitControls } from '../jsm/controls/OrbitControls.js';
+
+			var container;
+
+			var scrollingup;
+
+			var camera,scene,renderer,effect;
+			var particleLight,mesh;
+
+			var cubeWidth = 200;
+			var cube_count = 4;
+			var sphereRadius = ( cubeWidth / cube_count ) * 0.8 * 0.5;
+			var stepSize = 1.0 / cube_count;
+
+			var thecube=new THREE.Group();
+
+			var block1=new THREE.Group();
+			var block2=new THREE.Group();
+			var block3=new THREE.Group();
+			var block4=new THREE.Group();
+			var block5=new THREE.Group();
+			
+			var blockc1=new THREE.Group();
+			var blockc2=new THREE.Group();
+			var blockc3=new THREE.Group();
+			var blockc4=new THREE.Group();
+			var blockc5=new THREE.Group();
+			
+			var mouseX=0, mouseY=0;
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+
+			var finposx0,finposx1,finposx2,finposx3,finposx4;
+			var finposy0,finposy1,finposy2,finposy3,finposy4;
+			var finposz0,finposz1,finposz2,finposz3,finposz4;
+			
+			var mouseX=0, mouseY=0;
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+
+			var cam_max_d_x;
+			var cam_max_d_y;
+			cam_max_d_x=100;
+			cam_max_d_y=100;
+
+			var cube_max_distance = 650;
+			var cmds = 20000;
+
+			var raycaster = new THREE.Raycaster();
+			var mouse = new THREE.Vector2();
+
+			var c_radius = 5;
+
+			var scroll_speed = 300;
+			var sra = 500;
+
+			var light;
+
+			var lookatposition;
+
+			var ts, tm;
+			var TSA;
+			var tsDOWN;
+
+			init();
+			animate();
+
+			function createBoxWithRoundedEdges( width, height, depth, radius0, smoothness ) {
+			  let shape = new THREE.Shape();
+			  let eps = 0.00001;
+			  let radius = radius0 - eps;
+			  shape.absarc( eps, eps, eps, -Math.PI / 2, -Math.PI, true );
+			  shape.absarc( eps, height -  radius * 2, eps, Math.PI, Math.PI / 2, true );
+			  shape.absarc( width - radius * 2, height -  radius * 2, eps, Math.PI / 2, 0, true );
+			  shape.absarc( width - radius * 2, eps, eps, 0, -Math.PI / 2, true );
+			  let geometry = new THREE.ExtrudeBufferGeometry( shape, {
+			    depth: depth - radius0 * 2,
+			    bevelEnabled: true,
+			    bevelSegments: smoothness * 1.5,
+			    steps: 0,
+			    bevelSize: radius,
+			    bevelThickness: radius0,
+			    curveSegments: smoothness
+			  });
+			  
+			  geometry.center();
+			  
+			  return geometry;
+			}
+
+			function init() {
+
+				var geometry = new THREE.BoxGeometry( 100, 100, 100 );
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 20000 );
+				camera.position.set( -1200, 1300, 850 * 3.5 );
+
+				scene = new THREE.Scene();
+				var fogColor = new THREE.Color(0x272729);
+				scene.background = fogColor;
+				scene.fog = new THREE.Fog(fogColor, 0, 5500);
+
+				var cmat = new THREE.MeshLambertMaterial({depthWrite: true, color: 0x5BCBF5, transparent: false})
+				var cmesh = new THREE.Mesh(createBoxWithRoundedEdges( 100, 100, 100, c_radius, 16 ), cmat );
+				cmat.opacity = .5;
+				cmesh.position.set(200,200,200);
+				thecube.add(cmesh);
+
+				light = new THREE.PointLight( 0x5BCBF5, 1, 2000 );
+				light.position.set( 200, 200, 200);
+				thecube.add( light );
+
+				scene.add(thecube);
+
+				var colors = [ 0x272729,0x76787B,0x626466,0x585A5C,0x4F4F52,0x454548,0x3B3B3D,0x313133,0x272729 ];
+	
+              	// LEFT WALL
+              
+				for (var i = 0; i < 5; i++) { for (var j = 0; j < 5; j++) {
+						material = new THREE.MeshLambertMaterial({depthWrite: true, transparent: true, color: colors[Math.floor(Math.random() * colors.length)] } );
+						material.opacity=(Math.random() * (0.9 - 0.6) + 0.6);
+							// var mesh = new THREE.Mesh( geometry, material)
+								var mesh = new THREE.Mesh(createBoxWithRoundedEdges( 100, 100, 100, c_radius, 16 ), material ); 
+								mesh.position.x=i*100; mesh.position.y=j*100; mesh.position.z=0; var barname = "A"+i+j; mesh.name=barname; block1.add(mesh);
+						}
+					}
+					thecube.add(block1);
+
+				// FRONT WALL
+
+				for (var i = 0; i < 5; i++) { for (var j = 0; j < 4; j++) {
+						var material = new THREE.MeshLambertMaterial({depthWrite: true, transparent: true, color: colors[Math.floor(Math.random() * colors.length)] } );
+						material.opacity=(Math.random() * (0.9 - 0.6) + 0.6)
+								// var mesh = new THREE.Mesh( geometry, material)
+								var mesh = new THREE.Mesh(createBoxWithRoundedEdges( 100, 100, 100, c_radius, 16 ), material ); 
+								mesh.position.x=0; mesh.position.y=i*100; mesh.position.z=100+j*100; var barname = "B"+i+j; mesh.name=barname; block2.add(mesh);
+						}
+					}
+					thecube.add(block2);
+
+				// BACK WALL
+
+				for (var i = 0; i < 5; i++) { for (var j = 0; j < 4; j++) {
+						var material = new THREE.MeshLambertMaterial({depthWrite: true, transparent: true, color: colors[Math.floor(Math.random() * colors.length)] } );
+						material.opacity=(Math.random() * (0.9 - 0.6) + 0.6)
+								// var mesh = new THREE.Mesh( geometry, material)
+								var mesh = new THREE.Mesh(createBoxWithRoundedEdges( 100, 100, 100, c_radius, 16 ), material ); 
+								mesh.position.x=400; mesh.position.y=i*100; mesh.position.z=100+j*100; var barname = "C"+i+j; mesh.name=barname; block3.add(mesh);
+						}
+					}
+					thecube.add(block3);
+
+				for (var i = 0; i < 3; i++) { for (var j = 0; j < 5; j++) {
+						var material = new THREE.MeshLambertMaterial({depthWrite: true, transparent: true, color: colors[Math.floor(Math.random() * colors.length)] } );
+						material.opacity=(Math.random() * (0.9 - 0.6) + 0.6)
+								// var mesh = new THREE.Mesh( geometry, material)
+								var mesh = new THREE.Mesh(createBoxWithRoundedEdges( 100, 100, 100, c_radius, 16 ), material ); 
+								mesh.position.x=100+i*100; mesh.position.y=j*100; mesh.position.z=400; var barname = "D"+i+j; mesh.name=barname; block4.add(mesh);
+						}
+					}
+					thecube.add(block4);
+
+				// CENTRE BLOCK
+
+				for (var i = 0; i < 3; i++) { for (var j = 0; j < 3; j++) {
+						var material = new THREE.MeshLambertMaterial({depthWrite: true, transparent: true, color: colors[Math.floor(Math.random() * colors.length)] } );
+						material.opacity=(Math.random() * (0.9 - 0.6) + 0.6)
+								// var mesh = new THREE.Mesh( geometry, material)
+								var mesh = new THREE.Mesh(createBoxWithRoundedEdges( 100, 100, 100, c_radius, 16 ), material ); 
+								mesh.position.x=100+i*100; mesh.position.y=0; mesh.position.z=300-j*100; var barname = "AC"+i+j; mesh.name=barname; blockc1.add(mesh);
+							}
+						}
+					thecube.add(blockc1);
+
+				for (var i = 0; i < 3; i++) { for (var j = 0; j < 3; j++) {
+						var material = new THREE.MeshLambertMaterial({depthWrite: true, transparent: true, color: colors[Math.floor(Math.random() * colors.length)] } );
+						material.opacity=(Math.random() * (0.9 - 0.6) + 0.6)
+								// var mesh = new THREE.Mesh( geometry, material)
+								var mesh = new THREE.Mesh(createBoxWithRoundedEdges( 100, 100, 100, c_radius, 16 ), material ); 
+								mesh.position.x=100+i*100; mesh.position.y=100; mesh.position.z=300-j*100; var barname = "BC"+i+j; mesh.name=barname; blockc2.add(mesh);
+							}
+						}
+					thecube.add(blockc2);
+
+				for (var i = 0; i < 3; i++) { for (var j = 0; j < 3; j++) {
+						var material = new THREE.MeshLambertMaterial({depthWrite: true, transparent: true, color: colors[Math.floor(Math.random() * colors.length)] } );
+						material.opacity=(Math.random() * (0.9 - 0.6) + 0.6)
+								// var mesh = new THREE.Mesh( geometry, material)
+								var mesh = new THREE.Mesh(createBoxWithRoundedEdges( 100, 100, 100, c_radius, 16 ), material ); 
+								mesh.position.x=100+i*100; mesh.position.y=200; mesh.position.z=300-j*100; var barname = "CC"+i+j; mesh.name=barname; blockc3.add(mesh);
+							}
+						}
+					thecube.add(blockc3);
+
+				for (var i = 0; i < 3; i++) { for (var j = 0; j < 3; j++) {
+						var material = new THREE.MeshLambertMaterial({depthWrite: true, transparent: true, color: colors[Math.floor(Math.random() * colors.length)] } );
+						material.opacity=(Math.random() * (0.9 - 0.6) + 0.6)
+								// var mesh = new THREE.Mesh( geometry, material)
+								var mesh = new THREE.Mesh(createBoxWithRoundedEdges( 100, 100, 100, c_radius, 16 ), material ); 
+								mesh.position.x=100+i*100; mesh.position.y=300; mesh.position.z=300-j*100; var barname = "CD"+i+j; mesh.name=barname; blockc4.add(mesh);
+							}
+						}
+					thecube.add(blockc4);
+
+				for (var i = 0; i < 3; i++) { for (var j = 0; j < 3; j++) {
+						var material = new THREE.MeshLambertMaterial({depthWrite: true, transparent: true, color: colors[Math.floor(Math.random() * colors.length)] } );
+						material.opacity=(Math.random() * (0.9 - 0.6) + 0.6)
+								// var mesh = new THREE.Mesh( geometry, material)
+								var mesh = new THREE.Mesh(createBoxWithRoundedEdges( 100, 100, 100, c_radius, 16 ), material ); 
+								mesh.position.x=100+i*100; mesh.position.y=400; mesh.position.z=300-j*100; var barname = "CE"+i+j; mesh.name=barname; blockc5.add(mesh);
+							}
+						}
+					thecube.add(blockc5);
+
+				block1.traverse(function(A) {
+					for (var i = 0; i < 100; i++){
+					  	if (A.name==="A"+i||A.name==="A0"+i){ A.position.z=100-500-Math.floor(Math.random()*cube_max_distance);
+					  		}
+						}
+					})
+				block2.traverse(function(B) {
+					for (var i = 0; i < 100; i++){
+					  	if (B.name==="B"+i||B.name==="B0"+i){ B.position.x=100-500-Math.floor(Math.random()*cube_max_distance);
+					  		}
+						}
+					})
+				block3.traverse(function(C) {
+					for (var i = 0; i < 100; i++){
+					  	if (C.name==="C"+i||C.name==="C0"+i){ C.position.x=-(100-500-Math.floor(Math.random()*cube_max_distance));
+					  		}
+						}
+					})
+				block4.traverse(function(D) {
+					for (var i = 0; i < 100; i++){
+					  	if (D.name==="D"+i||D.name==="D0"+i){ D.position.z=-(100-500-Math.floor(Math.random()*cube_max_distance));
+					  		}
+						}
+					})
+
+				// CENTRE BLOCKS UP
+
+				blockc1.traverse(function(C1) {
+					for (var i = 0; i < 100; i++){
+					  	if (C1.name==="AC"+i||C1.name==="AC0"+i){ C1.position.y=100-500-Math.floor(Math.random()*cube_max_distance);
+					  		}
+						}
+					})
+				blockc2.traverse(function(C2) {
+					for (var i = 0; i < 100; i++){
+					  	if (C2.name==="BC"+i||C2.name==="BC0"+i){ C2.position.y=100-500-Math.floor(Math.random()*cube_max_distance);
+					  		}
+						}
+					})
+				blockc3.traverse(function(C3) {
+					for (var i = 0; i < 100; i++){
+					  	if (C3.name==="CC"+i||C3.name==="CC0"+i){ C3.position.y=100-500-Math.floor(Math.random()*cube_max_distance);
+					  		}
+						}
+					})
+
+				// CENTRE BLOCKS DOWN
+
+				blockc4.traverse(function(C4) {
+					for (var i = 0; i < 100; i++){
+					  	if (C4.name==="CD"+i||C4.name==="CD0"+i){ C4.position.y=-(100-500-Math.floor(Math.random()*cube_max_distance));
+					  		}
+						}
+					})
+				blockc5.traverse(function(C5) {
+					for (var i = 0; i < 100; i++){
+					  	if (C5.name==="CE"+i||C5.name==="CE0"+i){ C5.position.y=-(100-500-Math.floor(Math.random()*cube_max_distance));
+					  		}
+						}
+					})
+
+				var dl=new THREE.DirectionalLight(0xffffff,1,100);dl.position.set(50,50,0);dl.castShadow=true;         
+				scene.add( dl );
+				dl.shadow.mapSize.width=512;dl.shadow.mapSize.height=512;dl.shadow.camera.near=0.5;dl.shadow.camera.far=500;    
+				var al=new THREE.AmbientLight(0x404040);
+				scene.add(al);
+
+				var container = document.getElementById('canvas');
+				document.body.appendChild(container);
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+				renderer.shadowMap.enabled = true;
+				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+				var controls = new OrbitControls( camera, renderer.domElement );
+				controls.minDistance = 200;
+				controls.maxDistance = 3000;
+				controls.enableZoom = false;
+				controls.enableRotate = true;
+
+				window.addEventListener( 'resize', onWindowResize, false );
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				window.addEventListener( 'mousemove', onMouseMove, false );
+              
+              	thecube.position.set(0,0,0);
+			}
+
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+
+			function onDocumentMouseMove( event ) {
+				mouseX = ( event.clientX - windowHalfX );
+				mouseY = ( event.clientY - windowHalfY );
+			}
+
+			function onMouseMove( event ) {
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+			}
+
+			$(window).bind('mousewheel', function(event) {
+			    if (event.originalEvent.wheelDelta >= 0) {
+			        scroll_speed=Math.floor(Math.random() * (3000 - 1000 + 1) ) + 1000;
+			        sra = Math.floor(Math.random() * (300 - 0 + 1) ) + 0;
+			        scrollingup=true;
+			    }
+			    else {
+			        scroll_speed=400;
+			        sra = 700;
+			        scrollingup=false;
+			    }
+			});
+
+			function animate(){
+					block1.traverse(function(child) {
+						if (child.position.z>=0) {child.position.z=0} })
+					block2.traverse(function(child) {
+						if (child.position.x>=0) {child.position.x=0} })
+					block3.traverse(function(child) {
+						if (child.position.x<=200) {child.position.x=200} })
+					block4.traverse(function(child) {
+						if (child.position.z<=200) {child.position.z=200} })
+					blockc1.traverse(function(child) {
+						if (child.position.y>=0) {child.position.y=0} })
+					blockc2.traverse(function(child) {
+						if (child.position.y>=50) {child.position.y=50} })
+					blockc3.traverse(function(child) {
+						if (child.position.y>=100) {child.position.y=100} })
+					blockc4.traverse(function(child) {
+						if (child.position.y<=150) {child.position.y=150} })
+					blockc5.traverse(function(child) {
+						if (child.position.y<=200) {child.position.y=200} })
+
+				lookatposition = new THREE.Vector3(thecube.position.x-400,thecube.position.y,thecube.position.z);
+				camera.lookAt(lookatposition);
+
+				thecube.rotation.y+=mouseX*0.000005;
+				thecube.rotation.x+=mouseY*0.000005;
+
+				if (thecube.rotation.y<=-.7) {thecube.rotation.y=-.7} if (thecube.rotation.y>=0.7) {thecube.rotation.y=0.7} if (thecube.rotation.x<=-0.6) {thecube.rotation.x=-0.6} if (thecube.rotation.x>=0.6) {thecube.rotation.x=0.6}
+				requestAnimationFrame( animate );
+				render();
+				if (camera.position.y<=600) {camera.position.y=600}
+				if (camera.position.y>=1300) {camera.position.y=1300}
+			}
+
+			//TOUCH - - - - - - - - - - - -
+
+			var amount = 0;
+			var direction = 0;
+			var touchscroll = 0;
+			var distance;
+
+			$(document).on('touchstart', function(e) {
+
+			    var swipe = e.originalEvent.touches,
+			    start = swipe[0].pageY;
+			    document.body.addEventListener('touchmove', function(e){
+				    var tm = e.changedTouches[0].pageY;
+			        distance = tm-start;
+			        direction++;
+			        // down
+			        if (distance < -20){
+			        	touchscroll=0+direction;
+			        	// console.log(0+direction);
+			        } 
+
+			        // up
+			        // if (distance > 20){
+			        // 	direction++;
+			        // 	touchscroll=0-direction;
+			        // 	console.log(0-direction);
+			        // } 
+
+					scene.traverse(function(child) {
+					if(child.position.y>=cmds){child.position.y=cmds}if(child.position.y<=-cmds){child.position.y=-cmds}if(child.position.x>=cmds){child.position.x=cmds}if(child.position.x<=-cmds){child.position.x=-cmds}if(child.position.z>=cmds){child.position.z=cmds}if(child.position.z<=-cmds){child.position.z=-cmds}
+					})
+
+					// SIDES
+					block1.traverse(function(child) {
+						var number = child.name;
+						var s2 = number.substr(1);
+						if (s2%2 === 0){ child.position.z+=(touchscroll*Math.random()*sra)*2/20/5000}
+						if (s2%3 === 0){ child.position.z+=(touchscroll*Math.random()*sra)*2/20/3000}
+						else { child.position.z+=(touchscroll*Math.random()*sra)*2/20/750}
+					})
+					block2.traverse(function(child) {
+						var number = child.name;
+						var s2 = number.substr(1);
+						if (s2%2 === 0){ child.position.x+=(touchscroll*Math.random()*sra)*2/20/5000}
+						if (s2%3 === 0){ child.position.x+=(touchscroll*Math.random()*sra)*2/20/3000}
+						else { child.position.x+=(touchscroll*Math.random()*sra)*2/20/750}
+					})
+					block3.traverse(function(child) {
+						var number = child.name;
+						var s2 = number.substr(1);
+						if (s2%2 === 0){ child.position.x-=(touchscroll*Math.random()*sra)*2/20/5000}
+						if (s2%3 === 0){ child.position.x-=(touchscroll*Math.random()*sra)*2/20/3000}
+						else { child.position.x-=(touchscroll*Math.random()*sra)*2/20/750}
+					})
+					block4.traverse(function(child) {
+						var number = child.name;
+						var s2 = number.substr(1);
+						if (s2%2 === 0){ child.position.z-=(touchscroll*Math.random()*sra)*2/20/5000}
+						if (s2%3 === 0){ child.position.z-=(touchscroll*Math.random()*sra)*2/20/3000}
+						else { child.position.z-=(touchscroll*Math.random()*sra)*2/20/750}
+					})
+
+					// BOTTOM CENTRE
+
+					blockc1.traverse(function(child) {
+						var number = child.name;
+						var s2 = number.substr(2);
+						if (s2%2 === 0){ child.position.y+=(touchscroll*Math.random()*sra)*2/20/1000}
+						if (s2%3 === 0){ child.position.y+=(touchscroll*Math.random()*sra)*2/20/2000}
+						else { child.position.y+=(touchscroll*Math.random()*sra)*2/20/750}
+											})
+					blockc2.traverse(function(child) {
+						var number = child.name;
+						var s2 = number.substr(2);
+						if (s2%2 === 0){ child.position.y+=(touchscroll*Math.random()*sra)*2/20/3000}
+						if (s2%3 === 0){ child.position.y+=(touchscroll*Math.random()*sra)*2/20/4500}
+						else { child.position.y+=(touchscroll*Math.random()*sra)*2/20/750}
+					})
+					blockc3.traverse(function(child) {
+						var number = child.name;
+						var s2 = number.substr(2);
+						if (s2%2 === 0){ child.position.y+=(touchscroll*Math.random()*sra)*2/20/5000}
+						if (s2%3 === 0){ child.position.y+=(touchscroll*Math.random()*sra)*2/20/6000}
+						else { child.position.y+=(touchscroll*Math.random()*sra)*2/20/750}
+					})
+
+					// TOP CENTRE
+
+					blockc4.traverse(function(child) {
+						var number = child.name;
+						var s2 = number.substr(2);
+						if (s2%2 === 0){ child.position.y-=(touchscroll*Math.random()*sra)*2/20/5000}
+						if (s2%3 === 0){ child.position.y-=(touchscroll*Math.random()*sra)*2/20/6500}
+						else { child.position.y-=(touchscroll*Math.random()*sra)*2/20/750}
+					})
+					blockc5.traverse(function(child) {
+						var number = child.name;
+						var s2 = number.substr(2);
+						if (s2%2 === 0){ child.position.y-=(touchscroll*Math.random()*sra)*2/20/4000}
+						if (s2%3 === 0){ child.position.y-=(touchscroll*Math.random()*sra)*2/20/2000}
+						else { child.position.y-=(touchscroll*Math.random()*sra)*2/20/750}
+						})
+			        })
+			return;
+			});
+
+				$(document).on('touchend', function(e) {
+				distance=0;amount=0;direction=0;touchscroll=0;
+				return;
+			    })
+
+				document.body.addEventListener('touchend', function(e){
+				distance=0;amount=0;direction=0;touchscroll=0;
+				return;
+			    })
+
+			// MOUSEWHEEL - - - - - - - - - 
+
+			document.addEventListener('wheel', scroll);
+			var scrollableElement = document.body;
+
+			function scroll(event) {
+
+				camera.position.y-=event.deltaY*0.005;
+
+				scene.traverse(function(child) {
+				if(child.position.y>=cmds){child.position.y=cmds}if(child.position.y<=-cmds){child.position.y=-cmds}if(child.position.x>=cmds){child.position.x=cmds}if(child.position.x<=-cmds){child.position.x=-cmds}if(child.position.z>=cmds){child.position.z=cmds}if(child.position.z<=-cmds){child.position.z=-cmds}
+				})
+
+				// SIDES
+				block1.traverse(function(child) {
+					var number = child.name;
+					var s2 = number.substr(1);
+					if (s2%2 === 0){ child.position.z+=(event.deltaY*Math.random()*sra)*2/5000}
+					if (s2%3 === 0){ child.position.z+=(event.deltaY*Math.random()*sra)*2/3000}
+					else { child.position.z+=(event.deltaY*Math.random()*sra)*2/750}
+					
+				})
+				block2.traverse(function(child) {
+					var number = child.name;
+					var s2 = number.substr(1);
+					if (s2%2 === 0){ child.position.x+=(event.deltaY*Math.random()*sra)*2/5000}
+					if (s2%3 === 0){ child.position.x+=(event.deltaY*Math.random()*sra)*2/3000}
+					else { child.position.x+=(event.deltaY*Math.random()*sra)*2/750}
+					
+				})
+				block3.traverse(function(child) {
+					var number = child.name;
+					var s2 = number.substr(1);
+					if (s2%2 === 0){ child.position.x-=(event.deltaY*Math.random()*sra)*2/5000}
+					if (s2%3 === 0){ child.position.x-=(event.deltaY*Math.random()*sra)*2/3000}
+					else { child.position.x-=(event.deltaY*Math.random()*sra)*2/750}
+				})
+				block4.traverse(function(child) {
+					var number = child.name;
+					var s2 = number.substr(1);
+					if (s2%2 === 0){ child.position.z-=(event.deltaY*Math.random()*sra)*2/5000}
+					if (s2%3 === 0){ child.position.z-=(event.deltaY*Math.random()*sra)*2/3000}
+					else { child.position.z-=(event.deltaY*Math.random()*sra)*2/750}
+				})
+
+				// BOTTOM CENTRE
+
+				blockc1.traverse(function(child) {
+					var number = child.name;
+					var s2 = number.substr(2);
+					if (s2%2 === 0){ child.position.y+=(event.deltaY*Math.random()*sra)*2/2000}
+					if (s2%3 === 0){ child.position.y+=(event.deltaY*Math.random()*sra)*2/2000}
+					else { child.position.y+=(event.deltaY*Math.random()*sra)*2/750}
+					
+				})
+				blockc2.traverse(function(child) {
+					var number = child.name;
+					var s2 = number.substr(2);
+					if (s2%2 === 0){ child.position.y+=(event.deltaY*Math.random()*sra)*2/3000}
+					if (s2%3 === 0){ child.position.y+=(event.deltaY*Math.random()*sra)*2/4500}
+					else { child.position.y+=(event.deltaY*Math.random()*sra)*2/750}
+				})
+				blockc3.traverse(function(child) {
+					var number = child.name;
+					var s2 = number.substr(2);
+					if (s2%2 === 0){ child.position.y+=(event.deltaY*Math.random()*sra)*2/4800}
+					if (s2%3 === 0){ child.position.y+=(event.deltaY*Math.random()*sra)*2/5000}
+					else { child.position.y+=(event.deltaY*Math.random()*sra)*2/750}
+				})
+
+				// TOP CENTRE
+
+				blockc4.traverse(function(child) {
+					var number = child.name;
+					var s2 = number.substr(2);
+					if (s2%2 === 0){ child.position.y-=(event.deltaY*Math.random()*sra)*2/45000}
+					if (s2%3 === 0){ child.position.y-=(event.deltaY*Math.random()*sra)*2/5000}
+					else { child.position.y-=(event.deltaY*Math.random()*sra)*2/750}
+				})
+				blockc5.traverse(function(child) {
+					var number = child.name;
+					var s2 = number.substr(2);
+					if (s2%2 === 0){ child.position.y-=(event.deltaY*Math.random()*sra)*2/4000}
+					if (s2%3 === 0){ child.position.y-=(event.deltaY*Math.random()*sra)*2/2000}
+					else { child.position.y-=(event.deltaY*Math.random()*sra)*2/750}
+					})
+				}
+			
+
+			function render() {
+
+				raycaster.setFromCamera( mouse, camera );
+				var intersects = raycaster.intersectObjects( block1.children );
+				for ( var i = 0; i < intersects.length; i++ ) {
+					// intersects[ i ].object.material.color.set( 0xff0000 );
+					// console.log( intersects[ i ].object.name );
+				}
+
+				var timer = Date.now() * 0.00025;
+				renderer.render( scene, camera );
+			}
+
+			</script>
